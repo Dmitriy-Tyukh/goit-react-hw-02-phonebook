@@ -1,100 +1,77 @@
-import React, { Component }  from "react";
+import React, { Component } from 'react';
 import { nanoid } from 'nanoid';
-import ContactsList from "components/ContactsList";
-import ContactForm from "components/ContactForm";
-import Filter from "components/Filter";
+import { Box } from './App.styled'
+import contacts from 'dataJson/contacts.json';
+import ContactsList from 'components/ContactsList';
+import ContactForm from 'components/ContactForm';
+import Filter from 'components/Filter';
 
 class App extends Component {
   state = {
-    contacts: [
-      { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
-      { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
-      { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
-      { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
-    ],
-    name: '',
-    number: '',
+    contacts: contacts,
     filter: '',
   };
-  handleAddName = event => {
-    const { value } = event.currentTarget;
+
+  handleFiltContacts = event => {
+    const value = event.currentTarget.value;
+
     this.setState({
-      name: value,
-    });
-  };
-  handleAddNumber = event => {
-    const { value } = event.currentTarget;
-    this.setState({
-      number: value,
+      filter: value,
     });
   };
 
-  handleAddContacts = event => {
-    event.preventDefault();
+  fiteredContacts() {
+    const { contacts, filter } = this.state;
+    return contacts.filter(({ name }) =>
+      name.toLowerCase().includes(filter.toLowerCase())
+    );
+  }
+
+  handleDeleteContact = dataId => {
+    const { contacts } = this.state;
+    return this.setState({
+      contacts: contacts.filter(({ id }) => dataId !== id),
+    });
+  };
+
+  handleAddContact = ({ name, number }) => {
+    const { contacts } = this.state;
+    const nameContact = name;
     const newContact = {
       id: nanoid(),
-      name: this.state.name,
-      number: this.state.number,
+      name: name,
+      number: number,
     };
+
+    if (contacts.some(({ name }) => name === nameContact)) {
+      alert(`${nameContact} is already in contacts.`);
+      this.reset();
+      return;
+    }
+      
     this.setState(prevState => ({
       contacts: [...prevState.contacts, newContact],
     }));
-    this.reset();
   };
 
-  reset = () => {
-    this.setState({
-      name: '',
-      number: '',
-    });
-  };
-
-    handleFiltContacts = (event) => {
-        this.setState({
-            filter: event.currentTarget.value
-        });
-    }
-    
-    
-    
   render() {
-    const { contacts, name, number, filter } = this.state;
+    const { filter } = this.state;
+    const contactsFilter = this.fiteredContacts();
 
     return (
-      <div>
+      <Box>
         <h1>Phonebook </h1>
-        <ContactForm
-          name={name}
-          number={number}
-          onAddNumber={this.handleAddNumber}
-          onAddName={this.handleAddName}
-          onAddContacts={this.handleAddContacts}
-        />
-        <h2>Contacts</h2>
+        <ContactForm onSubmitForm={this.handleAddContact} />
 
-        <div>
-          <label>
-            Find contacts by name
-            <input
-              type="tel"
-              name="number"
-              value={filter}
-              onChange={this.handleFiltContacts}
-              pattern="\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}"
-              title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
-              required
-            />
-          </label>
-        </div>
-        <Filter fiter={filter} />
-            
+        <h2>Contacts</h2>
+        <Filter fiter={filter} onFiltContacts={this.handleFiltContacts} />
         <ContactsList
-          contacts={contacts}
-          onFiltContacts={this.handleFiltContacts}
+          contacts={contactsFilter}
+          onDeleteContact={this.handleDeleteContact}
         />
-      </div>
+      </Box>
     );
   }
-};
+}
 
 export default App;

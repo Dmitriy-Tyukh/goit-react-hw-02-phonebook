@@ -1,44 +1,62 @@
-import React from "react";
+import PropTypes from 'prop-types';
+import * as yup from 'yup';
+import { Formik } from 'formik';
+import {
+  FormStyled,
+  FieldStyled,
+  ErrorMessagetyled,
+  Label,
+  ButtonSubmit,
+} from './ContactForm.styled';
 
-function ContactForm({ name, number, onAddName, onAddNumber, onAddContacts }) {
+ const initialValues = {
+   name: '',
+   number: '',
+};
+ 
+let schema = yup.object().shape({
+  name: yup.string().required(),
+  number: yup.string().min(7).max(10).required(),
+});
+
+function ContactForm({ onSubmitForm }) {
+ 
+    const submitForm = (values, { resetForm }) => {
+        
+        onSubmitForm(values);
+        
+        resetForm();
+    };
+
   return (
-    <form>
-      <div>
-        <label>
+    <Formik
+      initialValues={initialValues}
+      validationSchema={schema}
+      onSubmit={submitForm}
+    >
+      <FormStyled autoComplete="off">
+        <Label>
           Name
-          <input
-            type="text"
-            name="name"
-            value={name}
-            onChange={onAddName}
-            pattern="^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
-            title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
-            required
-          />
-        </label>
-      </div>
+          <FieldStyled type="text" name="name" />
+          <ErrorMessagetyled name="name" component="div" />
+        </Label>
 
-      <div>
-        <label>
+        <Label>
           Number
-          <input
-            type="tel"
-            name="number"
-            value={number}
-            onChange={onAddNumber}
-            pattern="\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}"
-            title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
-            required
-          />
-        </label>
-      </div>
-          
-      <button type="button" onClick={onAddContacts}>
-        Add contacts
-      </button>
-          
-    </form>
+          <FieldStyled type="tel" name="number" />
+          <ErrorMessagetyled component="div" name="number" />
+        </Label>
+
+        <ButtonSubmit type="submit">Add contacts</ButtonSubmit>
+      </FormStyled>
+    </Formik>
   );
 }
 
+
 export default ContactForm;
+
+ContactForm.propTypes = {
+  onSubmitForm: PropTypes.func.isRequired,
+};
+
